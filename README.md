@@ -8,6 +8,7 @@ It currently supports:
 - Default values
 - Required field validation
 - Panic on parse errors for early failure detection
+- Loading environment variables from .env files
 
 ## Installation
 
@@ -51,6 +52,37 @@ Mark environment variables as required - will panic if not set:
 
 ```go
 apiKey := envv.Get("API_KEY").String().Required().Parse()
+```
+
+### Loading .env Files
+
+Load environment variables from `.env` files:
+
+```go
+// Load .env file from current directory
+envv.LoadDotEnv()
+
+// Load a specific .env file
+envv.LoadFile(".prod.env")
+```
+
+The `.env` file format supports:
+
+- Key-value pairs: `KEY=value`
+- Comments (lines starting with `#`)
+- Invalid lines are skipped with a warning
+
+Example `.env` file:
+
+```
+# Database configuration
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=myapp
+
+# API settings
+API_KEY=your-secret-key
+DEBUG=true
 ```
 
 ## Error Handling

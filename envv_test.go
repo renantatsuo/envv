@@ -1,16 +1,59 @@
-package envv
+package envv_test
 
 import (
 	"os"
 	"testing"
+
+	"github.com/renantatsuo/envv"
 )
 
-func TestGet(t *testing.T) {
-	// Test basic Get functionality
-	env := Get("TEST_VAR")
-	if env.name != "TEST_VAR" {
-		t.Errorf("Expected name to be TEST_VAR, got %s", env.name)
-	}
+func TestLoadFile(t *testing.T) {
+	t.Run("load .env file", func(t *testing.T) {
+		os.WriteFile(".env", []byte("TEST_VAR=test"), 0644)
+		envv.LoadDotEnv()
+		if os.Getenv("TEST_VAR") != "test" {
+			t.Errorf("Expected TEST_VAR to be 'test', got '%s'", os.Getenv("TEST_VAR"))
+		}
+		os.Remove(".env")
+		os.Unsetenv("TEST_VAR")
+	})
+
+	t.Run("load a .env file", func(t *testing.T) {
+		os.WriteFile(".prod.env", []byte("TEST_VAR=test"), 0644)
+		envv.LoadFile(".prod.env")
+		if os.Getenv("TEST_VAR") != "test" {
+			t.Errorf("Expected TEST_VAR to be 'test', got '%s'", os.Getenv("TEST_VAR"))
+		}
+		os.Remove(".prod.env")
+		os.Unsetenv("TEST_VAR")
+	})
+
+	t.Run("load .env file with comments", func(t *testing.T) {
+		os.WriteFile(".env", []byte("# TEST_VAR=test\nTEST_VAR=test"), 0644)
+		envv.LoadDotEnv()
+		if os.Getenv("TEST_VAR") != "test" {
+			t.Errorf("Expected TEST_VAR to be 'test', got '%s'", os.Getenv("TEST_VAR"))
+		}
+		os.Remove(".env")
+		os.Unsetenv("TEST_VAR")
+	})
+
+	t.Run("try to load non-existent file", func(t *testing.T) {
+		envv.LoadFile(".non-existent.env")
+		if os.Getenv("TEST_VAR") != "" {
+			t.Errorf("Expected TEST_VAR to be empty, got '%s'", os.Getenv("TEST_VAR"))
+		}
+	})
+
+	t.Run("load .env file with invalid value", func(t *testing.T) {
+		os.WriteFile(".env", []byte("TEST_VAR"), 0644)
+		envv.LoadDotEnv()
+		if os.Getenv("TEST_VAR") != "" {
+			t.Errorf("Expected TEST_VAR to be empty, got '%s'", os.Getenv("TEST_VAR"))
+		}
+		os.Remove(".env")
+		os.Unsetenv("TEST_VAR")
+	})
 }
 
 func TestString(t *testing.T) {
@@ -63,11 +106,11 @@ func TestString(t *testing.T) {
 
 			var result string
 			if tt.defaultValue != "" {
-				result = Get("TEST_STRING").String().Default(tt.defaultValue).Parse()
+				result = envv.Get("TEST_STRING").String().Default(tt.defaultValue).Parse()
 			} else if tt.required {
-				result = Get("TEST_STRING").String().Required().Parse()
+				result = envv.Get("TEST_STRING").String().Required().Parse()
 			} else {
-				result = Get("TEST_STRING").String().Optional().Parse()
+				result = envv.Get("TEST_STRING").String().Optional().Parse()
 			}
 
 			if !tt.shouldPanic && result != tt.expected {
@@ -125,11 +168,11 @@ func TestInt(t *testing.T) {
 
 			var result int
 			if tt.defaultValue != 0 {
-				result = Get("TEST_INT").Int().Default(tt.defaultValue).Parse()
+				result = envv.Get("TEST_INT").Int().Default(tt.defaultValue).Parse()
 			} else if tt.required {
-				result = Get("TEST_INT").Int().Required().Parse()
+				result = envv.Get("TEST_INT").Int().Required().Parse()
 			} else {
-				result = Get("TEST_INT").Int().Optional().Parse()
+				result = envv.Get("TEST_INT").Int().Optional().Parse()
 			}
 
 			if !tt.shouldPanic && result != tt.expected {
@@ -192,11 +235,11 @@ func TestBool(t *testing.T) {
 
 			var result bool
 			if tt.defaultValue != false {
-				result = Get("TEST_BOOL").Bool().Default(tt.defaultValue).Parse()
+				result = envv.Get("TEST_BOOL").Bool().Default(tt.defaultValue).Parse()
 			} else if tt.required {
-				result = Get("TEST_BOOL").Bool().Required().Parse()
+				result = envv.Get("TEST_BOOL").Bool().Required().Parse()
 			} else {
-				result = Get("TEST_BOOL").Bool().Optional().Parse()
+				result = envv.Get("TEST_BOOL").Bool().Optional().Parse()
 			}
 
 			if !tt.shouldPanic && result != tt.expected {
@@ -254,11 +297,11 @@ func TestFloat64(t *testing.T) {
 
 			var result float64
 			if tt.defaultValue != 0 {
-				result = Get("TEST_FLOAT").Float64().Default(tt.defaultValue).Parse()
+				result = envv.Get("TEST_FLOAT").Float64().Default(tt.defaultValue).Parse()
 			} else if tt.required {
-				result = Get("TEST_FLOAT").Float64().Required().Parse()
+				result = envv.Get("TEST_FLOAT").Float64().Required().Parse()
 			} else {
-				result = Get("TEST_FLOAT").Float64().Optional().Parse()
+				result = envv.Get("TEST_FLOAT").Float64().Optional().Parse()
 			}
 
 			if !tt.shouldPanic && result != tt.expected {
