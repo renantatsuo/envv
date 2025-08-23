@@ -4,7 +4,7 @@ envv is a type-safe env var parser for Go.
 
 It currently supports:
 
-- Type safety for basic types (string, int, bool, float64)
+- Type safety for basic types (string, int, bool, float64, time.Duration)
 - Default values
 - Required field validation
 - Panic on parse errors for early failure detection
@@ -34,6 +34,9 @@ debug := envv.Get("DEBUG").Bool().Optional().Parse()
 
 // Float value
 factor := envv.Get("SCALE_FACTOR").Float64().Optional().Parse()
+
+// Duration value
+timeout := envv.Get("TIMEOUT").Duration().Optional().Parse()
 ```
 
 ### Default Values
@@ -44,6 +47,7 @@ Provide fallback values when environment variables are not set:
 port := envv.Get("PORT").Int().Default(8080).Parse()
 debug := envv.Get("DEBUG").Bool().Default(false).Parse()
 factor := envv.Get("SCALE_FACTOR").Float64().Default(1.0).Parse()
+timeout := envv.Get("TIMEOUT").Duration().Default(30*time.Second).Parse()
 ```
 
 ### Required Values
@@ -83,6 +87,7 @@ DB_NAME=myapp
 # API settings
 API_KEY=your-secret-key
 DEBUG=true
+TIMEOUT=30s
 ```
 
 ## Error Handling

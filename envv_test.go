@@ -3,6 +3,7 @@ package envv_test
 import (
 	"os"
 	"testing"
+	"time"
 
 	"github.com/renantatsuo/envv"
 )
@@ -302,6 +303,62 @@ func TestFloat64(t *testing.T) {
 				result = envv.Get("TEST_FLOAT").Float64().Required().Parse()
 			} else {
 				result = envv.Get("TEST_FLOAT").Float64().Optional().Parse()
+			}
+
+			if !tt.shouldPanic && result != tt.expected {
+				t.Errorf("Expected %v, got %v", tt.expected, result)
+			}
+		})
+	}
+}
+
+func TestDuration(t *testing.T) {
+	tests := []struct {
+		name         string
+		envValue     string
+		defaultValue time.Duration
+		required     bool
+		expected     time.Duration
+		shouldPanic  bool
+	}{
+		{
+			name:     "valid duration",
+			envValue: "1h",
+			expected: 1 * time.Hour,
+		},
+		{
+			name:        "invalid duration",
+			envValue:    "not-a-duration",
+			shouldPanic: true,
+		},
+		{
+			name:        "required duration missing",
+			envValue:    "",
+			required:    true,
+			shouldPanic: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			defer func() {
+				os.Unsetenv("TEST_DURATION")
+				if r := recover(); (r != nil) != tt.shouldPanic {
+					t.Errorf("Panic = %v, shouldPanic = %v", r != nil, tt.shouldPanic)
+				}
+			}()
+
+			if tt.envValue != "" {
+				os.Setenv("TEST_DURATION", tt.envValue)
+			}
+
+			var result time.Duration
+			if tt.defaultValue != 0 {
+				result = envv.Get("TEST_DURATION").Duration().Default(tt.defaultValue).Parse()
+			} else if tt.required {
+				result = envv.Get("TEST_DURATION").Duration().Required().Parse()
+			} else {
+				result = envv.Get("TEST_DURATION").Duration().Optional().Parse()
 			}
 
 			if !tt.shouldPanic && result != tt.expected {

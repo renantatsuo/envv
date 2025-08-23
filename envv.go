@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"time"
 )
 
 type envv[T any] struct {
@@ -48,6 +49,11 @@ func (e basicEnvv) Bool() typedEnvv[bool] {
 // Float64 creates a float64-typed env var.
 func (e basicEnvv) Float64() typedEnvv[float64] {
 	return typedEnvv[float64](e)
+}
+
+// Duration creates a duration-typed env var.
+func (e basicEnvv) Duration() typedEnvv[time.Duration] {
+	return typedEnvv[time.Duration](e)
 }
 
 // Default sets a default value for the environment variable.
@@ -110,6 +116,12 @@ func (e envv[T]) Parse() T {
 		v, err := strconv.ParseFloat(value, 64)
 		if err != nil {
 			panic(fmt.Errorf("failed to parse float64 value %q: %w", value, err))
+		}
+		return any(v).(T)
+	case time.Duration:
+		v, err := time.ParseDuration(value)
+		if err != nil {
+			panic(fmt.Errorf("failed to parse duration value %q: %w", value, err))
 		}
 		return any(v).(T)
 	default:
