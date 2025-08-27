@@ -1,4 +1,6 @@
-<center><img src="./envv.svg" alt="envv logo" height="100"></center>
+<p align="center">
+  <img src="./envv.svg" alt="envv logo" height="100">
+</p>
 
 # envv
 
