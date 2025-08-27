@@ -1,3 +1,5 @@
+<center><img src="./envv.svg" alt="envv logo" height="100"></center>
+
 # envv
 
 envv is a type-safe env var parser for Go.
